@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mejora Visual con IA | Transforma tus Fotos en Profesionales</title>
+    <meta name="description" content="Transforma tus fotos caseras en imágenes de estudio profesionales con nuestra IA. Primera imagen GRATIS. Resultados en menos de 24 horas. Aumenta tus ventas con fotos que impactan.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* INSTRUCCIONES DE USO Y PERSONALIZACIÓN
+        -------------------------------------------
+        1. CÓDIGO ÚNICO: Todo el sitio web (Inicio y Galería) está en este único archivo.
+        2. WHATSAPP: Busca y reemplaza el número '573001234567' en todo el documento para personalizarlo.
+        3. CONTENIDO DINÁMICO: El contenido de la galería y los testimonios se gestiona desde los arrays 
+           'galleryData' y 'testimonialsData' en la sección de JavaScript al final del documento.
+        4. ESTADÍSTICAS: Para cambiar los números de las estadísticas, modifica el atributo `data-target` en el HTML correspondiente.
+        -------------------------------------------
+        */
+
+        :root {
+            --color-cta-primary: #007BFF;
+            --color-cta-primary-hover: #0056b3;
+            --color-confidence: #28a745;
+            --color-professional: #1E3A8A;
+            --color-attention-bg: #e7f3ff;
+            --color-attention-border: #b8d9ff;
+            --color-dark: #1A1A1A;
+            --color-light: #FFFFFF;
+            --color-soft-gray: #F8F9FA;
+            --color-text: #333;
+            --font-headers: 'Inter', sans-serif;
+            --font-text: 'Inter', sans-serif;
+            --font-numbers: 'Roboto Mono', monospace;
+            --spacing-sm: 1rem;
+            --spacing-md: 2rem;
+            --spacing-lg: 4rem;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --transition-smooth: all 0.3s ease-in-out;
+            --header-height: 70px; /* NUEVO: Altura del header para offsets */
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body { font-family: var(--font-text); color: var(--color-text); background-color: var(--color-light); line-height: 1.6; }
+
+        .container { width: 90%; max-width: 1200px; margin: 0 auto; }
+        section { padding: var(--spacing-lg) 0; position: relative; }
+        .page-view section:nth-of-type(even) { background-color: var(--color-soft-gray); }
+
+        h1, h2, h3 { font-family: var(--font-headers); font-weight: 700; color: var(--color-professional); line-height: 1.2; }
+        h1 { font-size: clamp(2.2rem, 4.5vw, 3rem); text-align: center; }
+        h2 { font-size: clamp(1.8rem, 3.5vw, 2.4rem); text-align: center; margin-bottom: var(--spacing-md); }
+        a { color: var(--color-professional); text-decoration: none; transition: var(--transition-smooth); cursor: pointer; }
+        a:hover { color: var(--color-cta-primary); }
+        img, video { max-width: 100%; height: auto; display: block; }
+
+        .page-view { display: block; }
+        .page-view.hidden { display: none; }
+
+        .cta-button { display: inline-block; padding: 14px 28px; font-weight: 600; text-align: center; text-transform: uppercase; border-radius: var(--border-radius); border: none; cursor: pointer; transition: var(--transition-smooth); }
+        .cta-button--primary { background-color: var(--color-cta-primary); color: var(--color-light); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); animation: pulse-primary 2s infinite; }
+        .cta-button--primary:hover { background-color: var(--color-cta-primary-hover); transform: translateY(-3px); }
+        @keyframes pulse-primary { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+        .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* --- NAVEGACIÓN --- */
+        .main-header { position: sticky; top: 0; width: 100%; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); z-index: 1000; padding: 0 var(--spacing-sm); height: var(--header-height); }
+        .main-header .container { display: flex; justify-content: space-between; align-items: center; height: 100%; }
+        .logo { font-weight: 700; font-size: 1.5rem; }
+        .main-nav ul { display: flex; list-style: none; gap: var(--spacing-md); }
+        .main-nav a { font-weight: 600; position: relative; padding-bottom: 5px; }
+        .main-nav a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 3px; background-color: var(--color-cta-primary); transition: var(--transition-smooth); }
+        .main-nav a:hover::after, .main-nav a.active::after { width: 100%; }
+        .mobile-nav-toggle { display: none; } /* Oculto por defecto */
+        
+        /* --- ESTILOS PARA DIFERENTES FORMATOS DE MEDIA (IMAGEN/VIDEO) --- */
+        .media-container {
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--color-soft-gray);
+            position: relative; /* Para videos */
+        }
+        .media-container img,
+        .media-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .format-square { aspect-ratio: 1 / 1; }
+        .format-horizontal { aspect-ratio: 16 / 9; }
+        .format-vertical { aspect-ratio: 9 / 16; }
+        .format-4-5 { aspect-ratio: 4 / 5; }
+        .format-4-3 { aspect-ratio: 4 / 3; }
+        /* --- FIN ESTILOS DE FORMATOS --- */
+
+        /* --- ESTILOS PARA VIDEO PERSONALIZADO --- */
+        .video-wrapper {
+            position: relative;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            transition: opacity 0.3s ease;
+            pointer-events: none; /* Permite clicks en el video */
+        }
+        .video-wrapper.is-playing .video-overlay {
+            opacity: 0;
+        }
+        .play-button {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .play-button::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-left: 20px solid var(--color-professional);
+            margin-left: 5px;
+        }
+        /* --- FIN ESTILOS DE VIDEO --- */
+
+        #inicio { min-height: calc(100vh - var(--header-height)); display: flex; align-items: center; }
+        .hero-content { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: var(--spacing-lg); }
+        .hero-text .subheadline { font-size: 1.25rem; margin: var(--spacing-sm) 0 var(--spacing-md) 0; }
+        .urgency-box { background-color: var(--color-attention-bg); border-left: 5px solid var(--color-attention-border); padding: var(--spacing-sm); margin-bottom: var(--spacing-md); border-radius: var(--border-radius); }
+        .urgency-box p { margin: 0; font-weight: 600; }
+        .urgency-box .counter-number { font-family: var(--font-numbers); font-size: 1.5rem; color: var(--color-professional); }
+        .hero-image-wrapper { display: flex; justify-content: center; align-items: center; }
+        
+        .before-after-slider { position: relative; width: 100%; max-width: 500px; overflow: hidden; border-radius: var(--border-radius); box-shadow: var(--box-shadow); }
+        .before-after-slider .image-after { clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%); }
+        .slider-handle { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background-color: var(--color-light); cursor: ew-resize; transform: translateX(-2px); z-index: 20; }
+        .slider-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; z-index: 30; }
+
+        #servicios { background-color: var(--color-soft-gray); }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-md); }
+        .service-card { background-color: var(--color-light); border-radius: var(--border-radius); box-shadow: var(--box-shadow); text-align: center; transition: var(--transition-smooth); display: flex; flex-direction: column; overflow: hidden; }
+        .service-card:hover { transform: translateY(-10px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12); }
+        .service-card-content { padding: var(--spacing-md); display: flex; flex-direction: column; flex-grow: 1; }
+        .service-card-content h3 { margin-bottom: 0.5rem; }
+        .service-card-content p { flex-grow: 1; margin-bottom: 1.5rem; }
+        
+        @media (min-width: 1024px) {
+            #transformacion, #proceso { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        }
+        
+        .transformation-container, .process-container { width: 100%; max-width: 1100px; }
+        #transformacion .before-after-slider { max-width: 800px; margin: 0 auto; }
+        .transformation-cta-box { text-align: center; margin-top: var(--spacing-md); }
+        .transformation-cta-box p { font-size: 1.5rem; font-weight: 600; color: var(--color-confidence); margin-bottom: var(--spacing-md); }
+
+        #proceso { background-color: var(--color-soft-gray); }
+        .process-steps { display: flex; justify-content: space-around; align-items: flex-start; gap: var(--spacing-md); margin-top: var(--spacing-md); }
+        .process-step { text-align: center; max-width: 250px; }
+        .process-step .icon { color: var(--color-cta-primary); margin: 0 auto 1rem; width: 48px; height: 48px; }
+        .process-step-content .step-label { font-weight: 700; color: var(--color-professional); }
+        .process-arrow { align-self: center; color: var(--color-attention-border); width: 48px; height: 48px; flex-shrink: 0; }
+        .process-cta { margin-top: var(--spacing-lg); text-align: center; }
+
+        #testimonios { background-color: var(--color-dark); color: var(--color-light); }
+        #testimonios h2 { color: var(--color-light); }
+        .testimonial-slider { position: relative; max-width: 800px; margin: 0 auto; overflow: hidden; }
+        .testimonial-track { display: flex; transition: transform 0.5s ease-in-out; }
+        .testimonial-card { background-color: #2c2c2c; border-radius: var(--border-radius); padding: var(--spacing-md); flex: 0 0 100%; display: flex; gap: var(--spacing-md); align-items: center; }
+        .testimonial-image { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .testimonial-card blockquote { font-size: 1.1rem; font-style: italic; border-left: 4px solid var(--color-cta-primary); padding-left: var(--spacing-sm); }
+        .testimonial-card cite { font-weight: 600; color: var(--color-soft-gray); }
+        .slider-controls { display: flex; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-md); }
+        .slider-btn { background-color: var(--color-professional); color: var(--color-light); border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; }
+        
+        .success-stats { margin-top: var(--spacing-lg); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md); text-align: center; }
+        .stat-item .stat-number { font-family: var(--font-numbers); font-size: 2.5rem; color: var(--color-confidence); }
+        .stat-item .stat-label { font-weight: 600; }
+        
+        #galeria-page h1 { margin-top: var(--spacing-lg); }
+        .gallery-filters { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+        .filter-btn { background-color: var(--color-light); border: 2px solid #ddd; color: #555; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 600; transition: var(--transition-smooth); }
+        .filter-btn:hover { border-color: var(--color-cta-primary); color: var(--color-cta-primary); }
+        .filter-btn.active { background-color: var(--color-professional); color: var(--color-light); border-color: var(--color-professional); }
+        #gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--spacing-md); }
+        .gallery-item { background: var(--color-light); border-radius: var(--border-radius); box-shadow: var(--box-shadow); overflow: hidden; transition: all 0.4s ease; display: flex; flex-direction: column; }
+        .gallery-item:hover { transform: translateY(-5px); }
+        .gallery-item .media-container img:hover { transform: scale(1.05); }
+        .gallery-item-info { padding: var(--spacing-sm); }
+        .gallery-item-info h4 { color: var(--color-professional); margin-bottom: 0.25rem; }
+        .gallery-item-info .stat { font-size: 0.9rem; color: var(--color-confidence); font-weight: 600; margin-bottom: 1rem; }
+        .gallery-item .cta-button { width: 100%; }
+        .load-more-container { text-align: center; margin: var(--spacing-lg) 0; }
+        .load-more-container .cta-button { width: auto; }
+
+        .whatsapp-float { position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); z-index: 100; animation: pulse-whatsapp 2s infinite ease-in-out; }
+        @keyframes pulse-whatsapp { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .main-footer { background-color: var(--color-dark); color: var(--color-soft-gray); padding: var(--spacing-md) 0; text-align: center; }
+
+        /* --- ESTILOS RESPONSIVE Y MENÚ MÓVIL --- */
+        @media (max-width: 768px) {
+            .hero-content { grid-template-columns: 1fr; text-align: center; }
+            .hero-text { order: 2; text-align: center; }
+            .hero-image-wrapper { order: 1; margin-bottom: var(--spacing-md); }
+            .process-steps { flex-direction: column; align-items: center; }
+            .process-arrow { transform: rotate(90deg); }
+            .testimonial-card { flex-direction: column; text-align: center; }
+            
+            /* Menú móvil */
+            .mobile-nav-toggle {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+                width: 30px;
+                height: 25px;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                z-index: 1001; /* Encima del menú */
+            }
+            .mobile-nav-toggle span {
+                width: 30px;
+                height: 3px;
+                background: var(--color-dark);
+                border-radius: 10px;
+                transition: all 0.3s ease;
+            }
+            .main-nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background-color: var(--color-light);
+                box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+                transition: right 0.4s ease-in-out;
+                padding-top: calc(var(--header-height) + 2rem);
+            }
+            .main-nav.is-open {
+                right: 0;
+            }
+            .main-nav ul {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            .main-nav li {
+                width: 100%;
+                text-align: center;
+            }
+            .main-nav a {
+                display: block;
+                padding: 1rem;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <a href="#" data-page="main" class="logo nav-link">Origen IA</a>
+            <nav class="main-nav" id="main-nav">
+                <ul>
+                    <li><a href="#inicio" data-page="main" class="nav-link active">Inicio</a></li>
+                    <li><a href="#" data-page="gallery" class="nav-link">Galería</a></li>
+                    <li><a href="#proceso" data-page="main" class="nav-link">Cómo Funciona</a></li>
+                    <li><a href="#testimonios" data-page="main" class="nav-link">Testimonios</a></li>
+                </ul>
+            </nav>
+            <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Abrir menú">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- VISTA PRINCIPAL -->
+    <div id="main-page" class="page-view">
+        <main>
+            <section id="inicio">
+                <div class="container hero-content">
+                    <div class="hero-text fade-in">
+                        <h1>Transforma Tus Fotos en Imágenes Profesionales con IA</h1>
+                        <p class="subheadline">Tu primera imagen es <strong>GRATIS</strong>. Resultados en menos de 24 horas.</p>
+                        <div class="urgency-box">
+                            <p>🔥 Solo 15 cupos gratuitos este mes</p>
+                            <p>Quedan: <span id="cupos-disponibles" class="counter-number">8</span> cupos disponibles</p>
+                        </div>
+                        <a href="https://api.whatsapp.com/send?phone=573001234567&text=Hola!%20Quisiera%20reclamar%20mi%20imagen%20gratuita." target="_blank" class="cta-button cta-button--primary">Obtener mi imagen gratis</a>
+                    </div>
+                    <div class="hero-image-wrapper fade-in">
+                        <!-- Usando las nuevas clases de formato -->
+                        <div class="before-after-slider media-container format-square" id="hero-slider">
+                            <img src="media/TranformacionProductos/AntesChaqueta1.jpeg" alt="Foto casera" class="image-before">
+                            <img src="media/TranformacionProductos/DespuesChaqueta1.png" alt="Foto profesional" class="image-after">
+                            <div class="slider-handle"></div>
+                            <input type="range" min="0" max="100" value="50" class="slider-input" aria-label="Deslizar para comparar">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="transformacion">
+                <div class="container transformation-container">
+                    <h2 class="fade-in">Mira la Transformación Mágica</h2>
+                     <!-- Usando las nuevas clases de formato -->
+                    <div class="before-after-slider media-container format-horizontal fade-in" id="main-slider">
+                        <img src="media/TranformacionProductos/AntesConjuntoBebe.png" alt="Reloj sobre una mesa de madera" class="image-before">
+                        <img src="media/TranformacionProductos/DspuesConjuntoBebe.png" alt="Reloj con fondo de estudio" class="image-after">
+                        <div class="slider-handle"></div>
+                        <input type="range" min="0" max="100" value="50" class="slider-input" aria-label="Deslizar para comparar">
+                    </div>
+                    <div class="transformation-cta-box fade-in">
+                        <p>Estas fotos generan +300% más ventas</p>
+                        <a href="#" data-page="gallery" class="cta-button cta-button--primary nav-link" style="background-color: var(--color-professional);">Ver más transformaciones</a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="servicios">
+                <div class="container">
+                    <h2 class="fade-in">Nuestros Servicios Estrella</h2>
+                    <div class="services-grid">
+                        <div class="service-card fade-in">
+                            <!-- Imagen formato 4:5 -->
+                            <div class="media-container format-4-5">
+                                <img src="media/TranformacionProductos/ImgCamiseta.png" alt="Mejora de producto">
+                            </div>
+                            <div class="service-card-content">
+                                <h3>Mejora de Productos</h3>
+                                <p>Convierte fotos caseras en imágenes de catálogo profesional.</p>
+                                <a href="https://api.whatsapp.com/send?phone=573001234567&text=Hola!%20Quisiera%20probar%20gratis%20el%20servicio%20de%20Mejora%20de%20Productos." target="_blank" class="cta-button cta-button--primary">Prueba Gratis</a>
+                            </div>
+                        </div>
+                        <div class="service-card fade-in">
+                            <!-- Ejemplo de Video Personalizado (Formato vertical) -->
+                            <div class="media-container format-vertical">
+                                <div class="video-wrapper">
+                                    <video src="https://assets.mixkit.co/videos/preview/mixkit-white-sand-beach-background-1564-large.mp4" muted loop playsinline></video>
+                                    <div class="video-overlay">
+                                        <div class="play-button"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="service-card-content">
+                                <h3>Animaciones y Videos</h3>
+                                <p>Dale vida a tus imágenes con videos cortos que capturan la atención.</p>
+                                <a href="https://api.whatsapp.com/send?phone=573001234567&text=Hola!%20Quisiera%20probar%20gratis%20el%20servicio%20de%20Animaciones." target="_blank" class="cta-button cta-button--primary">Prueba Gratis</a>
+                            </div>
+                        </div>
+                        <div class="service-card fade-in">
+                           <!-- Imagen horizontal -->
+                            <div class="media-container format-horizontal">
+                                <img src="https://via.placeholder.com/500x400/fef9c3/333?text=Lugar+Formato+Horizontal" alt="Mejora de lugar">
+                            </div>
+                            <div class="service-card-content">
+                                <h3>Cápsulas de Lugares</h3>
+                                <p>Muestra destinos o propiedades con una atmósfera única.</p>
+                                <a href="https://api.whatsapp.com/send?phone=573001234567&text=Hola!%20Quisiera%20probar%20gratis%20el%20servicio%20de%20Cápsulas%20de%20Lugares." target="_blank" class="cta-button cta-button--primary">Prueba Gratis</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- El resto del HTML permanece igual... -->
+
+            <section id="proceso">
+                <div class="container process-container">
+                    <h2 class="fade-in">Proceso Simple, Resultados Profesionales</h2>
+                    <div class="process-steps">
+                        <div class="process-step fade-in"><div class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg></div><div class="process-step-content"><span class="step-label">Paso 1</span><h3>Envía tu Foto</h3><p>Toma una foto clara con tu celular y envíala por WhatsApp.</p></div></div>
+                        <div class="process-arrow fade-in"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" /></svg></div>
+                        <div class="process-step fade-in"><div class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V8.25a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 8.25v7.5a2.25 2.25 0 002.25 2.25z" /></svg></div><div class="process-step-content"><span class="step-label">Paso 2</span><h3>Nosotros Trabajamos</h3><p>Nuestra IA, supervisada por expertos, hace la magia.</p></div></div>
+                        <div class="process-arrow fade-in"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" /></svg></div>
+                        <div class="process-step fade-in"><div class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.455-2.456L12.75 18l1.178-.398a3.375 3.375 0 002.455-2.456L16.5 14.25l.398 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.398a3.375 3.375 0 00-2.456 2.456z" /></svg></div><div class="process-step-content"><span class="step-label">Paso 3</span><h3>Recibe tu Transformación</h3><p>En menos de 24h tendrás una imagen profesional lista para usar.</p></div></div>
+                    </div>
+                    <div class="process-cta fade-in">
+                        <a href="https://api.whatsapp.com/send?phone=573001234567&text=Hola!%20Quiero%20empezar%20ahora%20con%20mi%20imagen%20gratis." target="_blank" class="cta-button cta-button--primary">Empezar ahora - Es gratis</a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="testimonios">
+                <div class="container">
+                    <h2 class="fade-in">Lo Que Dicen Nuestros Clientes</h2>
+                    <div class="testimonial-slider fade-in">
+                        <div class="testimonial-track" id="testimonial-track"></div>
+                    </div>
+                    <div class="slider-controls fade-in">
+                        <button id="prev-testimonial" class="slider-btn" aria-label="Anterior">←</button>
+                        <button id="next-testimonial" class="slider-btn" aria-label="Siguiente">→</button>
+                    </div>
+                    <!-- CONTENEDOR PARA LAS ESTADÍSTICAS OBSERVADO POR JS -->
+                    <div class="success-stats fade-in">
+                        <div class="stat-item"><span class="stat-number" data-target="127">0+</span><div class="stat-label">Clientes Satisfechos</div></div>
+                        <div class="stat-item"><span class="stat-number" data-target="98">0%</span><div class="stat-label">Tasa de Satisfacción</div></div>
+                        <div class="stat-item"><span class="stat-number" data-target="300">+0%</span><div class="stat-label">Aumento Promedio en Ventas</div></div>
+                        <div class="stat-item"><span class="stat-number" data-target="24"><0h</span><div class="stat-label">Promedio de Entrega</div></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- VISTA DE GALERÍA -->
+    <div id="gallery-page" class="page-view hidden">
+        <main>
+            <section id="galeria">
+                <div class="container">
+                    <h1>Galería de Transformaciones</h1>
+                    <p style="text-align: center; max-width: 600px; margin: 0 auto 2rem auto;">Filtra por categoría para ver ejemplos reales de nuestro trabajo. Cada imagen es una historia de éxito.</p>
+                    <div class="gallery-filters">
+                        <button class="filter-btn active" data-filter="todos">Todos</button>
+                        <button class="filter-btn" data-filter="productos">Productos</button>
+                        <button class="filter-btn" data-filter="animaciones">Animaciones</button>
+                        <button class="filter-btn" data-filter="lugares">Lugares</button>
+                    </div>
+                    <div id="gallery-grid"></div>
+                    <div class="load-more-container">
+                        <button id="load-more-btn" class="cta-button cta-button--primary">Cargar Más</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container"><p>© 2024 Origen IA. Todos los derechos reservados.</p></div>
+    </footer>
+
+    <a href="https://api.whatsapp.com/send?phone=573001234567&text=Hola!%20Estoy%20interesado%20en%20sus%20servicios." target="_blank" class="whatsapp-float" aria-label="Contactar por WhatsApp">
+       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 28px; height: 28px; fill: white;"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.8 0-67.6-9.5-97.2-26.7l-7.1-4.2-72.2 18.9L93 357.2l-4.5-7.4C65.8 320.5 56 282.7 56 243.9 56 137.1 130.6 62 223.9 62c47.4 0 92.2 18.4 126.1 52.3 33.8 33.9 52.3 78.8 52.3 126.1 0 106.7-76.3 193.8-172.4 193.8zM324.4 283.3c-3.2-1.6-19-9.4-22-10.4-3-1-5.2-1.6-7.4 1.6-2.2 3.2-8.3 10.4-10.2 12.5-1.9 2.1-3.8 2.3-7.1  .8-3.3-1.5-14-5.2-26.6-16.4-9.9-8.7-16.5-19.4-18.5-22.8-1.9-3.2-.2-4.9 .7-6.5 1.5-1.9 3.2-3.2 4.8-5.2 1.6-1.9 2.1-3.2 3.2-5.2 .9-1.9 .5-3.8-.2-5.2s-7.4-17.8-10.2-24.4c-2.8-6.6-5.6-5.7-7.8-5.7-2.1 0-4.6 0-7.1 0-2.5 0-6.6 1-10.2 4.6-3.6 3.6-13.7 13.4-13.7 32.8 0 19.4 14.1 38.1 16 40.8 1.9 2.7 27.5 42.1 66.7 58.7 9.7 4.1 17.3 6.6 23.2 8.5 8.1 2.6 15.4 2.2 21.2 1.4 6.4-.8 19-7.8 21.7-15.3 2.7-7.5 2.7-13.9 1.9-15.3z"/></svg>
+    </a>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DATOS PARA ELEMENTOS DINÁMICOS ---
+        const testimonialsData = [
+            { quote: "Increíble transformación. Mis ventas subieron 400%.", author: "María G.", company: "Boutique Online", img: "https://uifaces.co/our-content/donated/xP_Yp3xG.jpg" },
+            { quote: "El proceso fue rapidísimo y el resultado superó mis expectativas.", author: "Carlos P.", company: "Tienda de Gadgets", img: "https://uifaces.co/our-content/donated/vIymu9gN.jpg" },
+            { quote: "Nuestras reservas para el hotel se duplicaron. ¡Totalmente recomendado!", author: "Ana R.", company: "Hotel Paraíso", img: "https://uifaces.co/our-content/donated/n4Ngwvi7.jpg" }
+        ];
+        
+        const galleryData = [
+            // He modificado esto para usar las nuevas clases de formato
+            { id: 1, category: 'productos', title: 'Reloj de Lujo', stat: '+250% ventas', img: 'https://via.placeholder.com/500x400/ccc/333?text=Producto+1', format: 'format-4-3' },
+            { id: 2, category: 'animaciones', title: 'Botella Animada', stat: 'Viral: 10K views', img: 'https://via.placeholder.com/400x500/ccc/333?text=Animación+1', format: 'format-4-5' },
+            { id: 3, category: 'lugares', title: 'Cabaña en el Bosque', stat: 'Reservas +5x', img: 'https://via.placeholder.com/400x400/ccc/333?text=Lugar+1', format: 'format-square' },
+            { id: 4, category: 'productos', title: 'Zapatillas Deportivas', stat: '+180% clics', img: 'https://via.placeholder.com/900x1600/ccc/333?text=Producto+2', format: 'format-vertical' },
+            { id: 5, category: 'productos', title: 'Perfume Exclusivo', stat: 'Agotado en 2 días', img: 'https://via.placeholder.com/1600x900/ccc/333?text=Producto+3', format: 'format-horizontal' },
+            { id: 6, category: 'lugares', title: 'Apartamento Urbano', stat: 'Alquiler +30%', img: 'https://via.placeholder.com/500x500/ccc/333?text=Lugar+2', format: 'format-square' },
+        ];
+        
+        // --- NUEVO: INICIALIZACIÓN DEL MENÚ MÓVIL ---
+        function initMobileMenu() {
+            const toggleBtn = document.getElementById('mobile-nav-toggle');
+            const navMenu = document.getElementById('main-nav');
+            const navLinks = navMenu.querySelectorAll('.nav-link');
+
+            toggleBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('is-open');
+            });
+            
+            // Cierra el menú al hacer clic en un enlace
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navMenu.classList.contains('is-open')) {
+                        navMenu.classList.remove('is-open');
+                    }
+                });
+            });
+        }
+        
+        // --- NUEVO: INICIALIZACIÓN DE VIDEOS PERSONALIZADOS ---
+        function initVideoPlayers() {
+            const videoWrappers = document.querySelectorAll('.video-wrapper');
+            videoWrappers.forEach(wrapper => {
+                const video = wrapper.querySelector('video');
+                
+                // Toggle play/pause al hacer clic en el contenedor
+                wrapper.addEventListener('click', () => {
+                    if (video.paused) {
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                });
+                
+                // Actualiza la clase para mostrar/ocultar el overlay
+                video.addEventListener('play', () => wrapper.classList.add('is-playing'));
+                video.addEventListener('pause', () => wrapper.classList.remove('is-playing'));
+                
+                // Cuando el video termina, se pausa y muestra el botón de play
+                video.addEventListener('ended', () => {
+                    wrapper.classList.remove('is-playing');
+                });
+            });
+        }
+        
+        function initPageNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page-view');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetPageId = link.dataset.page;
+                    pages.forEach(page => page.classList.toggle('hidden', page.id !== `${targetPageId}-page`));
+                    navLinks.forEach(navLink => navLink.classList.remove('active'));
+                    document.querySelectorAll(`.nav-link[data-page="${targetPageId}"]`).forEach(l => l.classList.add('active'));
+                    const targetSectionId = link.getAttribute('href');
+                    if (targetSectionId && targetSectionId.startsWith('#')) {
+                        const targetElement = document.querySelector(targetSectionId);
+                        if (targetElement) {
+                            // Ajuste para el header fijo
+                            const headerOffset = document.querySelector('.main-header').offsetHeight;
+                            const elementPosition = targetElement.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                            window.scrollTo({
+                                top: offsetPosition,
+                                behavior: "smooth"
+                            });
+                        }
+                    } else {
+                        window.scrollTo(0, 0);
+                    }
+                });
+            });
+        }
+        
+        function initBeforeAfterSlider(selector) {
+            const slider = document.querySelector(selector);
+            if (!slider) return;
+            const imageAfter = slider.querySelector('.image-after');
+            const sliderInput = slider.querySelector('.slider-input');
+            sliderInput.addEventListener('input', (e) => {
+                imageAfter.style.clipPath = `polygon(${e.target.value}% 0, 100% 0, 100% 100%, ${e.target.value}% 100%)`;
+                slider.querySelector('.slider-handle').style.left = `${e.target.value}%`;
+            });
+        }
+        
+        function initTestimonialSlider() {
+            const track = document.getElementById('testimonial-track');
+            if(!track) return;
+            let currentIndex = 0;
+            testimonialsData.forEach(t => {
+                const slide = document.createElement('div');
+                slide.className = 'testimonial-card';
+                slide.innerHTML = `
+                    <img src="${t.img}" alt="Foto de ${t.author}" class="testimonial-image" loading="lazy">
+                    <div>
+                        <blockquote><p>"${t.quote}"</p></blockquote>
+                        <cite>- ${t.author}, ${t.company}</cite>
+                    </div>`;
+                track.appendChild(slide);
+            });
+            const slides = Array.from(track.children);
+            const moveToSlide = () => {
+                if (slides.length > 0) {
+                    const slideWidth = slides[0].getBoundingClientRect().width;
+                    track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+                }
+            }
+            document.getElementById('next-testimonial').addEventListener('click', () => { currentIndex = (currentIndex + 1) % slides.length; moveToSlide(); });
+            document.getElementById('prev-testimonial').addEventListener('click', () => { currentIndex = (currentIndex - 1 + slides.length) % slides.length; moveToSlide(); });
+            window.addEventListener('resize', moveToSlide);
+            moveToSlide();
+        }
+
+        function initGallery() {
+            const galleryGrid = document.getElementById('gallery-grid');
+            if (!galleryGrid) return;
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            let itemsToShow = 6;
+            let currentFilter = 'todos';
+
+            function renderGallery() {
+                galleryGrid.innerHTML = '';
+                const filteredData = currentFilter === 'todos' ? galleryData : galleryData.filter(item => item.category === currentFilter);
+                filteredData.slice(0, itemsToShow).forEach(item => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item fade-in';
+                    // MODIFICADO para usar el nuevo sistema de contenedores y clases de formato
+                    galleryItem.innerHTML = `
+                        <div class="media-container ${item.format || 'format-4-3'}">
+                            <img src="${item.img}" alt="Transformación de ${item.title}" loading="lazy" style="transition: transform 0.4s ease;">
+                        </div>
+                        <div class="gallery-item-info">
+                            <h4>${item.title}</h4>
+                            <p class="stat">${item.stat}</p>
+                            <a href="https://api.whatsapp.com/send?phone=573001234567&text=Hola!%20Me%20interesa%20el%20estilo%20de%20'${item.title}'." target="_blank" class="cta-button">Quiero este estilo</a>
+                        </div>`;
+                    galleryGrid.appendChild(galleryItem);
+                });
+                setTimeout(() => {
+                    document.querySelectorAll('.gallery-item.fade-in').forEach(el => el.classList.add('visible'));
+                }, 10);
+                loadMoreBtn.style.display = itemsToShow >= filteredData.length ? 'none' : 'block';
+            }
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    itemsToShow = 6;
+                    renderGallery();
+                });
+            });
+            loadMoreBtn.addEventListener('click', () => {
+                itemsToShow += 6;
+                renderGallery();
+            });
+            renderGallery();
+        }
+
+        function initCounterAnimation() {
+            const counters = document.querySelectorAll('.stat-number');
+            const speed = 200;
+
+            const animate = (counter) => {
+                const target = +counter.dataset.target;
+                const initialText = counter.innerText;
+                let count = 0;
+
+                const updateCount = () => {
+                    const increment = target / speed;
+                    count += increment;
+
+                    if (count < target) {
+                        let displayText = Math.ceil(count).toString();
+                        if (initialText.includes('+')) displayText = '+' + displayText;
+                        if (initialText.includes('%')) displayText += '%';
+                        if (initialText.includes('h')) displayText = '<' + displayText + 'h';
+                        counter.innerText = displayText;
+                        setTimeout(updateCount, 1);
+                    } else {
+                        let final_text = target.toString();
+                        if (initialText.includes('+')) final_text = '+' + final_text;
+                        if (initialText.includes('%')) final_text += '%';
+                        if (initialText.includes('h')) final_text = '<' + final_text + 'h';
+                        counter.innerText = final_text;
+                    }
+                };
+                updateCount();
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        counters.forEach(animate);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            const statsSection = document.querySelector('.success-stats');
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
+        }
+
+        function initScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        }
+        
+        // --- LLAMADAS A LAS NUEVAS FUNCIONES ---
+        initMobileMenu();
+        initVideoPlayers();
+        // --- FIN LLAMADAS ---
+        
+        initPageNavigation();
+        initBeforeAfterSlider('#hero-slider');
+        initBeforeAfterSlider('#main-slider');
+        initTestimonialSlider();
+        initGallery();
+        initScrollAnimations();
+        initCounterAnimation();
+    });
+    </script>
+</body>
+</html>
